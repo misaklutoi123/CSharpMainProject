@@ -1,91 +1,50 @@
-﻿using System.Collections.Generic;
-using Model.Runtime.Projectiles;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
-namespace UnitBrains.Player
+public class TargetSelector : MonoBehaviour
 {
-    public class SecondUnitBrain : DefaultPlayerUnitBrain
+    
+    private float DistanceToOwnBase(GameObject target)
     {
-        public override string TargetUnitName => "Cobra Commando";
-        private const float OverheatTemperature = 3f;
-        private const float OverheatCooldown = 2f;
-        private float _temperature = 0f;
-        private float _cooldownTime = 0f;
-        private bool _overheated;
-
-        protected override void GenerateProjectiles(Vector2Int forTarget, List<BaseProjectile> intoList)
-        {
-            
-            float currentTemp = GetTemperature();
-
-            
-            if (currentTemp >= OverheatTemperature)
-            {
-                return;
-            }
-
-            IncreaseTemperature();
-            //proverte pls
-           // xxkkjksjssuysddd
-            
-               
-            
-            
-            
-            int projectileCount = Mathf.Min((int)currentTemp + 1, 3);
-
-         
-            for (int i = 0; i < projectileCount; i++)
-            {
-                var projectile = CreateProjectile(forTarget);
-                AddProjectileToList(projectile, intoList);
-            }
-        }
-
-        public override Vector2Int GetNextStep()
-        {
-            return base.GetNextStep();
-        }
-
-        protected override List<Vector2Int> SelectTargets()
-        {
-            List<Vector2Int> result = GetReachableTargets();
-            while (result.Count > 1)
-            {
-                result.RemoveAt(result.Count - 1);
-            }
-            return result;
-        }
-
-        public override void Update(float deltaTime, float time)
-        {
-            if (_overheated)
-            {
-                _cooldownTime += Time.deltaTime;
-                float t = _cooldownTime / (OverheatCooldown / 10);
-                _temperature = Mathf.Lerp(OverheatTemperature, 0, t);
-                if (t >= 1)
-                {
-                    _cooldownTime = 0;
-                    _overheated = false;
-                }
-            }
-        }
-
-        private int GetTemperature()
-        {
-            if (_overheated) return (int)OverheatTemperature;
-            else return (int)_temperature;
-        }
-
-        private void IncreaseTemperature()
-        {
-            _temperature += 1f;
-            if (_temperature >= OverheatTemperature) _overheated = true;
-        }
+       
+        Vector3 basePosition = Vector3.zero; 
+        Vector3 targetPosition = target.transform.position;
+        return Vector3.Distance(targetPosition, basePosition);
     }
 
   
+    private List<GameObject> SelectClosestTarget(List<GameObject> targets)
+    {
+        if (targets == null)
+            throw new ArgumentNullException(nameof(targets));
 
+        if (targets.Count == 0)
+            return new List<GameObject>();
 
+        GameObject closestTarget = null;
+        float minDistance = float.MaxValue;
+
+        foreach (GameObject target in targets)
+        {
+            float distance = DistanceToOwnBase(target);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                closestTarget = target;
+            }
+        }
+
+        var result = new List<GameObject>();
+        if (closestTarget != null)
+        {
+            result.Add(closestTarget);
+        }
+        else
+        {
+            Debug.LogWarning("No valid target found!");
+        }
+
+        return result;
+    }
 }
