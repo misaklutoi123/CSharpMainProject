@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TargetSelector : MonoBehaviour
+public class SecondUnitBrain : MonoBehaviour
 {
     
     private float DistanceToOwnBase(GameObject target)
